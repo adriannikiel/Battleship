@@ -2,3 +2,4 @@ content:
 - Integer types and operations
 - Relational operators
 - Throwing exceptions
+- Custom exceptions
