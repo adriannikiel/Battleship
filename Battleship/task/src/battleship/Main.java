@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static Scanner scanner = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
         // Write your code here
@@ -15,13 +15,12 @@ public class Main {
         prepareGameField(myGameField);
 
         String[][] enemyGameField = new String[myGameField.length][];
-
         for (int i = 0; i < myGameField.length; i++) {
             enemyGameField[i] = Arrays.copyOf(myGameField[i], myGameField[i].length);
         }
 
         takeShot(enemyGameField);
-        drawGameField(enemyGameField, false);
+
     }
 
     private static void prepareGameField(String[][] gameField) {
@@ -37,15 +36,28 @@ public class Main {
         drawGameField(gameField, true);
         System.out.println("\nTake a shot!\n");
 
-        boolean isHit = chooseShipField(gameField);
-        drawGameField(gameField, true);
+        int counter = 0;
 
-        if (isHit) {
-            System.out.println("\nYou hit a ship!\n");
-        } else {
-            System.out.println("\nYou missed!\n");
+        while (counter < 5) {
+            ShotState state = chooseShipField(gameField);
+            drawGameField(gameField, true);
+
+            switch (state) {
+                case HIT:
+                    System.out.println("\nYou hit a ship! Try again:\n");
+                    break;
+                case MISSED:
+                    System.out.println("\nYou missed. Try again:\n");
+                    break;
+                case SUNK:
+                    System.out.println("You sank a ship! Specify a new target:");
+                    counter++;
+                    break;
+            }
+
+            System.out.println("You sank the last ship. You won. Congratulations!");
+
         }
-
     }
 
     private static void chooseAircraftCarrier(String[][] gameField) {
@@ -78,19 +90,24 @@ public class Main {
         drawGameField(gameField, false);
     }
 
-    private static boolean chooseShipField(String[][] gameField) {
+    private static ShotState chooseShipField(String[][] gameField) {
+
+        ShotState state = ShotState.MISSED;
+
         while (true) {
 
             String[] coord = getCoords();
 
             if (checkShipFieldLocation(coord)) {
                 System.out.println();
-                return shot(gameField, coord);
-            }
-            else {
+                state = shot(gameField, coord);
+                break;
+            } else {
                 System.out.println("\nError! You entered the wrong coordinates! Try again:\n");
             }
         }
+
+        return state;
     }
 
     private static void chooseShip(String[][] gameField, int lengthOfShip) {
@@ -257,21 +274,78 @@ public class Main {
 
     }
 
-    private static boolean shot(String[][] gameField, String[] coord) {
+    private static ShotState shot(String[][] gameField, String[] coord) {
+
+        ShotState state = ShotState.MISSED;
 
         int row = coord[0].charAt(0) - 'A' + 1;
         int column = Integer.parseInt(coord[1]);
 
         if (gameField[row][column].equals("O")) {
             gameField[row][column] = "X";
-            return true;
-        } else if (gameField[row][column].equals("~"))  {
+            state = checkSunk(gameField, row, column);  // HIT OR SUNK
+        } else if (gameField[row][column].equals("~")) {
             gameField[row][column] = "M";
-            return false;
+            state = ShotState.MISSED;
         }
 
-        return false;
+        return state;
+
     }
+
+    private static ShotState checkSunk(String[][] gameField, int fieldRow, int fieldColumn) {
+
+        boolean isShipHorizontal = checkShipHorizontal(gameField, fieldRow, fieldColumn);
+
+        if (isShipHorizontal) {
+
+            for (int column = fieldColumn - 1; column >= 1; column--) {
+                String field = gameField[fieldRow][column];
+
+                if (field.equals("O")) {
+                    return ShotState.HIT;
+                } else if (field.equals("~") || field.equals("M")) {
+                    break;
+                }
+            }
+
+            for (int column = fieldColumn + 1; column <= 10; column++) {
+                String field = gameField[fieldRow][column];
+
+                if (field.equals("O")) {
+                    return ShotState.HIT;
+                } else if (field.equals("~") || field.equals("M")) {
+                    break;
+                }
+            }
+
+        } else {
+
+            for (int row = fieldRow - 1; row >= 1; row--) {
+                String field = gameField[row][fieldColumn];
+
+                if (field.equals("O")) {
+                    return ShotState.HIT;
+                } else if (field.equals("~") || field.equals("M")) {
+                    break;
+                }
+            }
+
+            for (int row = fieldRow + 1; row <= 10; row++) {
+                String field = gameField[row][fieldColumn];
+
+                if (field.equals("O")) {
+                    return ShotState.HIT;
+                } else if (field.equals("~") || field.equals("M")) {
+                    break;
+                }
+            }
+
+        }
+
+        return ShotState.SUNK;
+    }
+
 
     private static int[] getNewLocationData(String[] coord1, String[] coord2, boolean isHorizontal) {
 
@@ -299,6 +373,19 @@ public class Main {
         return new int[]{first, second, rowOrColumn};
     }
 
+
+    private static boolean checkShipHorizontal(String[][] gameField, int row, int column) {
+
+        boolean isShipHorizontal = false;
+
+        if (column > 1 && (gameField[row][column - 1].equals("X") || gameField[row][column - 1].equals("O"))) {
+            isShipHorizontal = true;
+        } else if (column < 10 && (gameField[row][column + 1].equals("X") || gameField[row][column + 1].equals("O"))) {
+            isShipHorizontal = true;
+        }
+
+        return isShipHorizontal;
+    }
 
     private static boolean checkHorizontal(String[] coord1, String[] coord2) throws DiagonalPositionException {
 
