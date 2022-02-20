@@ -10,49 +10,78 @@ public class Main {
         // Write your code here
 
         String[][] gameField = initGameField();
-
         drawGameField(gameField);
 
+        prepareGameField(gameField);
+        takeShot(gameField);
+
+    }
+
+    private static void prepareGameField(String[][] gameField) {
         chooseAircraftCarrier(gameField);
-        drawGameField(gameField);
-
         chooseBattleship(gameField);
-        drawGameField(gameField);
-
         chooseSubmarine(gameField);
-        drawGameField(gameField);
-
         chooseCruiser(gameField);
-        drawGameField(gameField);
-
         chooseDestroyer(gameField);
+    }
+
+    private static void takeShot(String[][] gameField) {
+        System.out.println("\nThe game starts!\n");
+        drawGameField(gameField);
+        System.out.println("\nTake a shot!\n");
+
+        boolean isHit = chooseShipField(gameField);
         drawGameField(gameField);
 
+        if (isHit) {
+            System.out.println("\nYou hit a ship!\n");
+        } else {
+            System.out.println("\nYou missed!\n");
+        }
     }
 
     private static void chooseAircraftCarrier(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Aircraft Carrier (5 cells):\n");
         chooseShip(gameField, 5);
+        drawGameField(gameField);
     }
 
     private static void chooseBattleship(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Battleship (4 cells):");
         chooseShip(gameField, 4);
+        drawGameField(gameField);
     }
 
     private static void chooseSubmarine(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Submarine (3 cells):");
         chooseShip(gameField, 3);
+        drawGameField(gameField);
     }
 
     private static void chooseCruiser(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Cruiser (3 cells):");
         chooseShip(gameField, 3);
+        drawGameField(gameField);
     }
 
     private static void chooseDestroyer(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Destroyer (2 cells):");
         chooseShip(gameField, 2);
+        drawGameField(gameField);
+    }
+
+    private static boolean chooseShipField(String[][] gameField) {
+        while (true) {
+
+            String[] coord = getCoords();
+
+            if (checkShipFieldLocation(coord)) {
+                return shot(gameField, coord);
+            }
+            else {
+                System.out.println("\nError! You entered the wrong coordinates! Try again:\n");
+            }
+        }
     }
 
     private static void chooseShip(String[][] gameField, int lengthOfShip) {
@@ -114,7 +143,7 @@ public class Main {
         }
 
         // check ship location
-        if (!checkShipLocation(coord1, coord2)) {
+        if (!(checkShipFieldLocation(coord1) && checkShipFieldLocation(coord2))) {
             return 1;
         }
 
@@ -131,15 +160,13 @@ public class Main {
         return 0;
     }
 
-    private static boolean checkShipLocation(String[] coord1, String[] coord2) {
+    private static boolean checkShipFieldLocation(String[] coord) {
 
-        if (coord1[0].charAt(0) < 'A' || coord1[0].charAt(0) > 'J' ||
-                coord2[0].charAt(0) < 'A' || coord2[0].charAt(0) > 'J') {
+        if (coord[0].charAt(0) < 'A' || coord[0].charAt(0) > 'J') {
             return false;
         }
 
-        if (Integer.parseInt(coord1[1]) < 1 || Integer.parseInt(coord1[1]) > 10 ||
-                Integer.parseInt(coord2[1]) < 1 || Integer.parseInt(coord2[1]) > 10) {
+        if (Integer.parseInt(coord[1]) < 1 || Integer.parseInt(coord[1]) > 10) {
             return false;
         }
 
@@ -219,6 +246,22 @@ public class Main {
             }
         }
 
+    }
+
+    private static boolean shot(String[][] gameField, String[] coord) {
+
+        int row = coord[0].charAt(0) - 'A' + 1;
+        int column = Integer.parseInt(coord[1]);
+
+        if (gameField[row][column].equals("O")) {
+            gameField[row][column] = "X";
+            return true;
+        } else if (gameField[row][column].equals("~"))  {
+            gameField[row][column] = "M";
+            return false;
+        }
+
+        return false;
     }
 
     private static int[] getNewLocationData(String[] coord1, String[] coord2, boolean isHorizontal) {
