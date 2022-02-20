@@ -1,5 +1,6 @@
 package battleship;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -9,12 +10,18 @@ public class Main {
     public static void main(String[] args) {
         // Write your code here
 
-        String[][] gameField = initGameField();
-        drawGameField(gameField);
+        String[][] myGameField = initGameField();
+        drawGameField(myGameField, false);
+        prepareGameField(myGameField);
 
-        prepareGameField(gameField);
-        takeShot(gameField);
+        String[][] enemyGameField = new String[myGameField.length][];
 
+        for (int i = 0; i < myGameField.length; i++) {
+            enemyGameField[i] = Arrays.copyOf(myGameField[i], myGameField[i].length);
+        }
+
+        takeShot(enemyGameField);
+        drawGameField(enemyGameField, false);
     }
 
     private static void prepareGameField(String[][] gameField) {
@@ -27,47 +34,48 @@ public class Main {
 
     private static void takeShot(String[][] gameField) {
         System.out.println("\nThe game starts!\n");
-        drawGameField(gameField);
+        drawGameField(gameField, true);
         System.out.println("\nTake a shot!\n");
 
         boolean isHit = chooseShipField(gameField);
-        drawGameField(gameField);
+        drawGameField(gameField, true);
 
         if (isHit) {
             System.out.println("\nYou hit a ship!\n");
         } else {
             System.out.println("\nYou missed!\n");
         }
+
     }
 
     private static void chooseAircraftCarrier(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Aircraft Carrier (5 cells):\n");
         chooseShip(gameField, 5);
-        drawGameField(gameField);
+        drawGameField(gameField, false);
     }
 
     private static void chooseBattleship(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Battleship (4 cells):");
         chooseShip(gameField, 4);
-        drawGameField(gameField);
+        drawGameField(gameField, false);
     }
 
     private static void chooseSubmarine(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Submarine (3 cells):");
         chooseShip(gameField, 3);
-        drawGameField(gameField);
+        drawGameField(gameField, false);
     }
 
     private static void chooseCruiser(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Cruiser (3 cells):");
         chooseShip(gameField, 3);
-        drawGameField(gameField);
+        drawGameField(gameField, false);
     }
 
     private static void chooseDestroyer(String[][] gameField) {
         System.out.println("\nEnter the coordinates of the Destroyer (2 cells):");
         chooseShip(gameField, 2);
-        drawGameField(gameField);
+        drawGameField(gameField, false);
     }
 
     private static boolean chooseShipField(String[][] gameField) {
@@ -76,6 +84,7 @@ public class Main {
             String[] coord = getCoords();
 
             if (checkShipFieldLocation(coord)) {
+                System.out.println();
                 return shot(gameField, coord);
             }
             else {
@@ -330,10 +339,17 @@ public class Main {
         return gameField;
     }
 
-    private static void drawGameField(String[][] gameField) {
+    private static void drawGameField(String[][] gameField, boolean isFog) {
         for (int i = 0; i < gameField.length; i++) {
             for (int j = 0; j < gameField.length; j++) {
-                System.out.print(gameField[i][j] + " ");
+
+                String field = gameField[i][j];
+
+                if (isFog && field.equals("O")) {
+                    System.out.print("~ ");
+                } else {
+                    System.out.print(field + " ");
+                }
             }
             System.out.println();
         }

@@ -369,6 +369,17 @@ files:
         }
     }
   learner_created: false
+- name: src/battleship/DiagonalPositionException.java
+  visible: true
+  text: |
+    package battleship;
+
+    public class DiagonalPositionException extends RuntimeException {
+        public DiagonalPositionException(String s) {
+            super(s);
+        }
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/125/stages/666/implement#comment
 status: Unchecked
 record: -1
