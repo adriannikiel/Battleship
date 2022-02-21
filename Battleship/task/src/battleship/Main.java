@@ -1,6 +1,6 @@
 package battleship;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
@@ -8,18 +8,38 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        // Write your code here
 
         String[][] myGameField = initGameField();
+
+        System.out.println("Player 1, place your ships on the game field\n");
         drawGameField(myGameField, false);
         prepareGameField(myGameField);
 
-        String[][] enemyGameField = new String[myGameField.length][];
-        for (int i = 0; i < myGameField.length; i++) {
-            enemyGameField[i] = Arrays.copyOf(myGameField[i], myGameField[i].length);
-        }
+        String[][] enemyGameField = initGameField();
 
-        takeShot(enemyGameField);
+        System.out.println("\nPlayer 2, place your ships to the game field\n");
+        drawGameField(enemyGameField, false);
+        prepareGameField(enemyGameField);
+
+        int myCounter = 0;
+        int enemyCounter = 0;
+
+        while (true) {
+            myCounter += takeShot(myGameField, enemyGameField, 1);
+            if (myCounter == 5) {
+                System.out.println("You sank the last ship. You won. Congratulations!");
+                break;
+            }
+            pressEnter();
+
+            enemyCounter += takeShot(enemyGameField, myGameField, 2);
+            if (enemyCounter == 5) {
+                System.out.println("You sank the last ship. You won. Congratulations!");
+                break;
+            }
+            pressEnter();
+
+        }
 
     }
 
@@ -29,35 +49,43 @@ public class Main {
         chooseSubmarine(gameField);
         chooseCruiser(gameField);
         chooseDestroyer(gameField);
+
+        pressEnter();
     }
 
-    private static void takeShot(String[][] gameField) {
-        System.out.println("\nThe game starts!\n");
-        drawGameField(gameField, true);
-        System.out.println("\nTake a shot!\n");
+    private static void pressEnter() {
+        System.out.println("\nPress Enter and pass the move to another player");
+        System.out.println("...\n");
 
-        int counter = 0;
-
-        while (counter < 5) {
-            ShotState state = chooseShipField(gameField);
-            drawGameField(gameField, true);
-
-            switch (state) {
-                case HIT:
-                    System.out.println("\nYou hit a ship! Try again:\n");
-                    break;
-                case MISSED:
-                    System.out.println("\nYou missed. Try again:\n");
-                    break;
-                case SUNK:
-                    System.out.println("You sank a ship! Specify a new target:");
-                    counter++;
-                    break;
-            }
-
-            System.out.println("You sank the last ship. You won. Congratulations!");
-
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    private static int takeShot(String[][] myGameField, String[][] enemyGameField, int player) {
+
+        drawGameField(enemyGameField, true);
+        System.out.println("---------------------");
+        drawGameField(myGameField, false);
+        System.out.println("\nPlayer " + player + ", it's your turn:\n");
+
+        ShotState state = chooseShipField(enemyGameField);
+
+        switch (state) {
+            case HIT:
+                System.out.println("You hit a ship!");
+                break;
+            case MISSED:
+                System.out.println("You missed!");
+                break;
+            case SUNK:
+                System.out.println("You sank a ship!");
+                return 1;
+        }
+
+        return 0;
     }
 
     private static void chooseAircraftCarrier(String[][] gameField) {
